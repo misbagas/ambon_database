@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding: 20px;
+    }
+    .form-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .weather-result {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <marquee behavior="" direction="">belum upgrade api key makanya kurang paten</marquee>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Weather App</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Features</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Pricing</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">About</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar and Main Content -->
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+        <div class="position-sticky">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/weather/details">Weather Details</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Reports</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Settings</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-4">
+        <h1 class="h2">Welcome to the Weather Dashboard</h1>
+        <p>Here you can view weather data, reports, and settings.</p>
+
+        <!-- Weather Form -->
+        <div class="form-container">
+          <h3>Weather Search</h3>
+          <form id="weather-form">
+            <div class="mb-3">
+              <label for="location" class="form-label">Enter Location</label>
+              <input type="text" class="form-control" id="location" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Get Weather</button>
+          </form>
+
+          <!-- Weather Results -->
+          <div id="weather-result" class="weather-result mt-4"></div>
+        </div>
+
+        <!-- Cards for Weather Dashboard Information -->
+        <div class="row mt-4">
+          <!-- Weather Report Card -->
+          <div class="col-sm-12 col-md-6 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Weather Report</h5>
+                <p id="weather-report" class="card-text">Loading...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Alerts Card -->
+          <div class="col-sm-12 col-md-6 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Recent Alerts</h5>
+                <ul id="recent-alerts" class="list-group">
+                  <li class="list-group-item">Loading...</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forecast Card -->
+          <div class="col-sm-12 col-md-6 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Forecast</h5>
+                <ul id="forecast" class="list-group">
+                  <li class="list-group-item">Loading...</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Bootstrap JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('weather-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const location = document.getElementById('location').value;
+      const response = await fetch(`/weather?location=${location}`);
+      const data = await response.json();
+
+      const weatherResult = document.getElementById('weather-result');
+      const weatherReport = document.getElementById('weather-report');
+      const recentAlerts = document.getElementById('recent-alerts');
+      const forecast = document.getElementById('forecast');
+
+      if (response.ok) {
+        // Update Weather Report
+        weatherReport.innerHTML = `
+          <strong>Temperature:</strong> ${data.weather.temperature}°C <br>
+          <strong>Humidity:</strong> ${data.weather.humidity}% <br>
+          <strong>Wind Speed:</strong> ${data.weather.wind_speed} km/h
+        `;
+
+        // Update Recent Alerts
+        if (data.alerts.length > 0) {
+          recentAlerts.innerHTML = data.alerts.map(alert => `
+            <li class="list-group-item">${alert.description}</li>
+          `).join('');
+        } else {
+          recentAlerts.innerHTML = '<li class="list-group-item">No recent alerts.</li>';
+        }
+
+        // Update Forecast
+        if (data.forecast.length > 0) {
+          forecast.innerHTML = data.forecast.map(day => `
+            <li class="list-group-item">${day.date}: ${day.temperature}°C</li>
+          `).join('');
+        } else {
+          forecast.innerHTML = '<li class="list-group-item">No forecast data available.</li>';
+        }
+      } else {
+        weatherResult.innerHTML = `<p>Error: ${data.error}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
